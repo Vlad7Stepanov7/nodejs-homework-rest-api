@@ -1,9 +1,12 @@
 const { Contact } = require("../models/contact");
-const { HttpError, ctrlWrapper } = require(".././helpers");
+
+const { HttpError, ctrlWrapper } = require("../helpers");
 
 const listContacts = async (req, res) => {
   const { _id: owner } = req.user;
-    const result = await Contact.find({owner}, "-createAt - updateAt").populate("owner");
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+    const result = await Contact.find({owner}, "-createAt - updateAt", {skip, limit}).populate("owner");
 
     if (!result) {
       throw HttpError(404, "Not fount");

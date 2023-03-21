@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 const { User } = require("../models/user");
 
-const { HttpError, ctrlWrapper } = require(".././helpers");
+const { HttpError, ctrlWrapper } = require("../helpers");
 
 const { SECRET_KEY } = process.env;
 
@@ -21,7 +21,6 @@ const register = async (req, res) => {
 
     res.status(201).json({
         email: newUser.email,
-        password: newUser.password,
         subscription: newUser.subscription
     })
 }
@@ -45,13 +44,32 @@ const login = async (req, res) => {
     
     const token = jwt.sign(payload, SECRET_KEY, {expiresIn: "23h"});
     await User.findByIdAndUpdate(user._id, { token });
-    
+
     res.json({
         token,
+    })
+}
+
+const getCurrent = async (req, res) => {
+    const { email, subscription } = req.user;
+
+    res.json({
+        email,
+        subscription,
+    })
+}
+const logout = async(req, res) => {
+    const { _id } = req.user;
+    await User.findByIdAndUpdate(_id, { token: "" });
+
+    res.json({
+        message: "Logout success"
     })
 }
 
 module.exports = {
     register: ctrlWrapper(register),
     login: ctrlWrapper(login),
+    getCurrent: ctrlWrapper(getCurrent),
+    logout: ctrlWrapper(logout),
 }
